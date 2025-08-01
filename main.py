@@ -33,7 +33,7 @@ hotels = [
 ]
 
 
-@app.get("/hotels")
+@app.get("/hotels", summary="Показать отели")
 async def get_hotels(
         id: int | None = Query(None, description="id"),
         title: str | None = Query(None, description="Название отеля")
@@ -47,9 +47,8 @@ async def get_hotels(
             continue
         hotels_.append(hotel)
     return hotels_
-    # return [hotel for hotel in hotels if hotel["title"] == title or hotel["id"] == id]
 
-@app.post("/hotels")
+@app.post("/hotels", summary="Добавить отель")
 async def creat_hotel(
         title: str = Body(embed=True),
         description: str = Body(embed=True),
@@ -65,7 +64,7 @@ async def creat_hotel(
     return {"status": "Ok"}
 
 
-@app.put("/hotels/{hotel_id}")
+@app.put("/hotels/{hotel_id}", summary="Изменить отель")
 async def update_all_hotel(
         hotel_id: int,
         title: str = Body(),
@@ -73,37 +72,48 @@ async def update_all_hotel(
         ):
     global hotels
 
-    for hotel in hotels:
-        if hotel_id and hotel["id"] == hotel_id:
-            hotel["title"] = title
+    hotel = [hotel for hotel in hotels if hotel["id"] == hotel_id][0]
+    hotel["title"] = title
+    hotel["description"] = description
 
-            hotel["description"] = description
-            return {"update": "Ok", "hotels": hotels}
+    # for hotel in hotels:
+    #     if hotel_id and hotel["id"] == hotel_id:
+    #         hotel["title"] = title
+    #
+    #         hotel["description"] = description
+    return {"update": "Ok", "hotels": hotels}
 
 
-@app.patch("/hotels/{hotel_id}")
+@app.patch("/hotels/{hotel_id}", summary="Внести изменения в отель")
 async def update_hotel(
         hotel_id: int,
         title: str | None = Body(default=None),
         description: str | None = Body(default=None),
 ):
     global hotels
-    for hotel in hotels:
-        if hotel_id and hotel["id"] == hotel_id and title != "string" and description != "string":
-            hotel["title"] = title
-            hotel["description"] = description
-        elif hotel_id and hotel["id"] == hotel_id and title != "string":
-            hotel["title"] = title
-        elif hotel_id and hotel["id"] == hotel_id and description != "string":
-            hotel["description"] = description
-        else:
-            return {"update": False, "message": "Изменений нет"}
 
-        return {"update": "Ok", "hotels": hotels}
+    hotel = [hotel for hotel in hotels if hotel["id"] == hotel_id][0]
+    if title:
+        hotel["title"] = title
+    if description:
+        hotel["description"] = description
+    return { "hotel": hotel, "update": "Ok"}
+    # for hotel in hotels:
+    #     if hotel_id and hotel["id"] == hotel_id and title != "string" and description != "string":
+    #         hotel["title"] = title
+    #         hotel["description"] = description
+    #     elif hotel_id and hotel["id"] == hotel_id and title != "string":
+    #         hotel["title"] = title
+    #     elif hotel_id and hotel["id"] == hotel_id and description != "string":
+    #         hotel["description"] = description
+    #     else:
+    #         return {"update": False, "message": "Изменений нет"}
+    #
+    #     return {"update": "Ok", "hotels": hotels}
 
 
 
-@app.delete("/hotels/{hotel_id}")
+@app.delete("/hotels/{hotel_id}", summary="Удалить отель")
 async def delete_hotel(hotel_id: int):
     global hotels
     hotels = [hotel for hotel in hotels if hotel["id"] != hotel_id]
