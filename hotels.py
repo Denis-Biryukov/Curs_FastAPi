@@ -1,6 +1,8 @@
+
 from fastapi import Query, Body, APIRouter
 from pydantic import BaseModel
 
+from dependencies import PaginationDep
 
 router = APIRouter(prefix="/hotels")
 
@@ -23,10 +25,10 @@ hotels = [
 
 @router.get("/", summary="Показать отели")
 async def get_hotels(
+        pagination: PaginationDep,
         id: int | None = Query(None, description="id"),
-        title: str | None = Query(None, description="Название отеля"),
-        page: int  | None = Query(1, description="Номер страницы"),
-        per_page: int | None = Query(3, description="Количество на странице"),
+        title: str | None = Query(None, description="Название отеля")
+
 ):
     # global hotels
     hotels_ = []
@@ -37,7 +39,9 @@ async def get_hotels(
             continue
         hotels_.append(hotel)
     # return [hotel for hotels_ [per_page: page]]
-    return hotels_[((page - 1) * per_page):(per_page * page)]
+
+    # return hotels_[((pagination.page - 1) * pagination.per_page):(pagination.per_page * pagination.page)]
+    return hotels_[(pagination.page - 1) * pagination.per_page:][:pagination.per_page]
 
 
 @router.post("", summary="Добавить отель")
